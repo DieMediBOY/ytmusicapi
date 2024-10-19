@@ -22,6 +22,17 @@ app.get('/search', (req, res) => {
     });
 });
 
+// Ruta para obtener información de un álbum (ejemplo)
+app.get('/album', (req, res) => {
+    const albumId = req.query.id;
+    exec(`python3 ./ytmusicapi/parsers/albums.py ${albumId}`, (error, stdout, stderr) => {
+        if (error) {
+            return res.status(500).json({ error: stderr });
+        }
+        return res.json(JSON.parse(stdout));
+    });
+});
+
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

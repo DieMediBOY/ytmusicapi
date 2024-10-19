@@ -1,6 +1,6 @@
-from ..helpers import to_int
-from ._utils import *
-from .songs import *
+from ytmusicapi.helpers import to_int
+from ytmusicapi.parsers._utils import *
+from ytmusicapi.parsers.songs import *
 import sys
 import json
 
@@ -9,9 +9,12 @@ def search(query):
     return {"results": f"Results for {query}"}
 
 if __name__ == "__main__":
-    query = sys.argv[1]
-    results = search(query)
-    print(json.dumps(results))
+    if len(sys.argv) < 2:
+        print(json.dumps({"error": "No search query provided"}))
+    else:
+        query = sys.argv[1]
+        results = search(query)
+        print(json.dumps(results))
 
 UNIQUE_RESULT_TYPES = ["artist", "playlist", "song", "video", "station", "profile", "podcast", "episode"]
 ALL_RESULT_TYPES = ["album", *UNIQUE_RESULT_TYPES]

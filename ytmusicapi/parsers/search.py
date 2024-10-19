@@ -1,6 +1,17 @@
 from ..helpers import to_int
 from ._utils import *
 from .songs import *
+import sys
+import json
+
+def search(query):
+    # Implementa la lógica de búsqueda aquí
+    return {"results": f"Results for {query}"}
+
+if __name__ == "__main__":
+    query = sys.argv[1]
+    results = search(query)
+    print(json.dumps(results))
 
 UNIQUE_RESULT_TYPES = ["artist", "playlist", "song", "video", "station", "profile", "podcast", "episode"]
 ALL_RESULT_TYPES = ["album", *UNIQUE_RESULT_TYPES]

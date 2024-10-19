@@ -1,65 +1,66 @@
-// Importar las librerías necesarias
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { search, getAlbum, getPlaylist } = require('./ytmusicapi/parsers'); // Ajustar según las funciones disponibles
+const { search, getAlbum, getPlaylist } = require('./ytmusicapi/parsers'); // Ajusta las importaciones si es necesario
 
-// Crear una instancia de Express
 const app = express();
 
-// Usar CORS para permitir solicitudes desde cualquier origen
 app.use(cors());
-
-// Usar bodyParser para manejar JSON en las solicitudes
 app.use(bodyParser.json());
-
-// Rutas de la API
-
-// Ruta para buscar canciones
-app.get('/search', async (req, res) => {
-  try {
-    const { query } = req.query;
-    const results = await search(query); // Llama a la función de búsqueda
-    res.json(results);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Ruta para obtener un álbum por ID
-app.get('/album', async (req, res) => {
-  try {
-    const { albumId } = req.query;
-    const album = await getAlbum(albumId); // Llama a la función para obtener un álbum
-    res.json(album);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Ruta para obtener una playlist por ID
-app.get('/playlist', async (req, res) => {
-  try {
-    const { playlistId } = req.query;
-    const playlist = await getPlaylist(playlistId); // Llama a la función para obtener una playlist
-    res.json(playlist);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
 // Ruta de prueba para verificar el funcionamiento del servidor
 app.get('/', (req, res) => {
   res.json({ message: "API de YouTube Music funcionando correctamente" });
 });
 
-// Configuración del puerto
-const PORT = process.env.PORT || 3000;
+// Ruta para buscar canciones
+app.get('/search', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    const results = await search(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error en /search:', error);
+    res.status(500).json({ error: 'Failed to search' });
+  }
+});
 
-// Iniciar el servidor
+// Ruta para obtener un álbum
+app.get('/album', async (req, res) => {
+  try {
+    const { albumId } = req.query;
+    if (!albumId) {
+      return res.status(400).json({ error: 'Album ID is required' });
+    }
+    const album = await getAlbum(albumId);
+    res.json(album);
+  } catch (error) {
+    console.error('Error en /album:', error);
+    res.status(500).json({ error: 'Failed to get album' });
+  }
+});
+
+// Ruta para obtener una playlist
+app.get('/playlist', async (req, res) => {
+  try {
+    const { playlistId } = req.query;
+    if (!playlistId) {
+      return res.status(400).json({ error: 'Playlist ID is required' });
+    }
+    const playlist = await getPlaylist(playlistId);
+    res.json(playlist);
+  } catch (error) {
+    console.error('Error en /playlist:', error);
+    res.status(500).json({ error: 'Failed to get playlist' });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 });
 
-// Exportar la app para que Vercel la use
 module.exports = app;

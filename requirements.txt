@@ -1,2 +1,4 @@
 Flask==2.0.3
 ytmusicapi  # Agrega aquí cualquier otra librería de Python que estés utilizando
+sphinx<7
+sphinx-rtd-theme

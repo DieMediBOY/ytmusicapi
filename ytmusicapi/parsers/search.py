@@ -1,12 +1,15 @@
 from ytmusicapi.helpers import to_int
 from ytmusicapi.parsers._utils import *
 from ytmusicapi.parsers.songs import *
+from ytmusicapi import YTMusic
 import sys
 import json
 
 def search(query):
-    # Implementa la lógica de búsqueda aquí
-    return {"results": f"Results for {query}"}
+    # Inicializar YTMusic (puede que necesites un archivo de autenticación 'oauth.json' si lo requieres)
+    yt = YTMusic()  # Si necesitas autenticación, pasa la ruta de tu archivo: YTMusic('oauth.json')
+    search_results = yt.search(query)
+    return {"results": search_results}
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

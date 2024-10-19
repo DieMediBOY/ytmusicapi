@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
-from ytmusicapi.parsers import search  # Ajusta la importación según tus archivos
+import sys
+import json
+from ytmusicapi.parsers.search import search  # Ajusta la ruta según tu estructura
 
 app = Flask(__name__)
 
@@ -8,8 +10,14 @@ def search_songs():
     query = request.args.get('query')
     if not query:
         return jsonify({"error": "Query parameter is required"}), 400
-    results = search(query)  # Suponiendo que `search` es una función en `search.py`
+    
+    # Llamar a la función de búsqueda importada
+    results = search(query)
     return jsonify(results)
+
+@app.route('/', methods=['GET'])
+def welcome():
+    return "Bienvenido"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

@@ -1,35 +1,37 @@
 const express = require('express');
 const cors = require('cors');
 const { exec } = require('child_process');
-
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
 // Ruta para la raíz con un mensaje de bienvenida
 app.get('/', (req, res) => {
-    res.send('Bienvenido');
+    res.send('Bienvenido vía JS');
 });
 
-// Ejemplo de otra ruta (ajusta según tus necesidades)
+// Ruta para buscar canciones usando `ytmusicapi`
 app.get('/search', (req, res) => {
     const query = req.query.query;
-    exec(`python3 ./ytmusicapi/parsers/search.py ${query}`, (error, stdout, stderr) => {
-        if (error) {
-            return res.status(500).json({ error: stderr });
-        }
-        return res.json(JSON.parse(stdout));
-    });
-});
 
-// Ruta para obtener información de un álbum (ejemplo)
-app.get('/album', (req, res) => {
-    const albumId = req.query.id;
-    exec(`python3 ./ytmusicapi/parsers/albums.py ${albumId}`, (error, stdout, stderr) => {
+    if (!query) {
+        return res.status(400).json({ error: "Query parameter is required" });
+    }
+
+    // Ejecuta el script de Python con el argumento de búsqueda
+    exec(`python3 ./ytmusicapi/parsers/search.py "${query}"`, (error, stdout, stderr) => {
         if (error) {
+            console.error('Error ejecutando el script:', stderr);
             return res.status(500).json({ error: stderr });
         }
-        return res.json(JSON.parse(stdout));
+        try {
+            // Intenta parsear la salida del script como JSON
+            const results = JSON.parse(stdout);
+            res.json(results);
+        } catch (parseError) {
+            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
+        }
     });
 });
 

@@ -1,7 +1,7 @@
 {
-  "name": "ytmusicapi",
+  "name": "ytmusicapi-server",
   "version": "1.0.0",
-  "description": "API de YouTube Music",
+  "description": "API para YouTube Music utilizando ytmusicapi y Node.js",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"

@@ -11,6 +11,12 @@ def search(query):
     search_results = yt.search(query)
     return {"results": search_results}
 
+def search_suggestions(query)
+    # Inicializar YTMusic (puede que necesites un archivo de autenticación 'oauth.json' si lo requieres)
+    yt = YTMusic()  # Si necesitas autenticación, pasa la ruta de tu archivo: YTMusic('oauth.json')
+    suggestions_results = yt.get_search_suggestions(query)
+    return {"suggestions:": suggestions_results}
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(json.dumps({"error": "No search query provided"}))

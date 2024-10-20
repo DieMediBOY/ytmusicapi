@@ -7,14 +7,30 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Función genérica para ejecutar comandos de Python
 const runPythonScript = (command, query, res, extraArg = "") => {
+    exec(`python3 ./ytmusicapi/parsers/index.py "${command}" "${query}" ${extraArg}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error('Error ejecutando el script:', stderr);
+            return res.status(500).json({ error: stderr });
+        }
+        try {
+            const results = JSON.parse(stdout);
+            res.json(results);
+        } catch (parseError) {
+            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
+        }
+    });
+};
+
+const runYoutubeScript = (query, res) => {
     exec(`python3 ./ytmusicapi/parsers/download_audio.py "${query}"`, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
             return res.status(500).json({ error: stderr });
         }
         try {
-            const results = JSON.parse(stdout); // Asegúrate de que la salida sea JSON válida
+            const results = JSON.parse(stdout);
             if (results.status === "success") {
                 const filePath = `./${results.file}`;
                 res.download(filePath, (err) => {
@@ -84,7 +100,7 @@ app.get('/download', (req, res) => {
     if (!youtubeId) {
         return res.status(400).json({ error: "YouTube ID is required" });
     }
-    runPythonScript("download_audio", youtubeId, res);
+    runYoutubeScript("download_audio", youtubeId, res);
 });
 
 

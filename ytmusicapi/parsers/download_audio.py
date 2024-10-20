@@ -10,7 +10,7 @@ def download_audio(youtube_id):
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': f'{youtube_id}.%(ext)s',
-        'quiet': True,
+        'quiet': True,  # Evita mensajes innecesarios
         'no_warnings': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -20,13 +20,16 @@ def download_audio(youtube_id):
     }
 
     try:
+        print(f"Current working directory: {os.getcwd()}")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
 
         if os.path.exists(output_path):
+            print(f"File generated: {output_filename}")
+            print(f"Available files: {os.listdir(os.getcwd())}")
             print(output_filename)  # Imprimir solo el nombre del archivo
         else:
-            print("ERROR: File not found after download")
+            print(f"ERROR: File not found at {output_path}")
 
     except Exception as e:
         print(f"ERROR: {str(e)}")

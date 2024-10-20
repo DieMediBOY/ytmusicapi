@@ -8,16 +8,17 @@ def download_audio(youtube_id):
     output_path = os.path.join(os.getcwd(), output_filename)
     
     ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': f'{youtube_id}.%(ext)s',
-        'quiet': True,  # Evita mensajes innecesarios
-        'no_warnings': True,
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
+    'format': 'bestaudio/best',
+    'outtmpl': f'{youtube_id}.%(ext)s',
+    'quiet': True,
+    'no_warnings': True,
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+        'ffmpeg_location': '/usr/bin/ffmpeg'  # Ajusta la ruta de ffmpeg si es necesario
+    }],
+}
 
     try:
         print(f"Current working directory: {os.getcwd()}")

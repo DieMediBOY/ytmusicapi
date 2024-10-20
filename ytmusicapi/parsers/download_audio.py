@@ -1,18 +1,16 @@
-from flask import Flask, request, jsonify
-from yt_dlp import YoutubeDL
+rom flask import Flask, request, jsonify
 import os
+import yt_dlp
 
 app = Flask(__name__)
 
 @app.route('/download', methods=['GET'])
 def download_audio():
     video_id = request.args.get('id')
-
     if not video_id:
-        return jsonify({"error": "No se proporcionó ningún ID de video"}), 400
-
+        return jsonify({"error": "No video ID provided"}), 400
+    
     try:
-        # Configuración para descargar solo el audio en formato mp3
         ydl_opts = {
             'format': 'bestaudio/best',
             'postprocessors': [{
@@ -20,22 +18,28 @@ def download_audio():
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'outtmpl': '/app/%(title)s.%(ext)s',  # Guardar archivo en el directorio de la app
+            'outtmpl': f'/app/{video_id}.%(ext)s'
         }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([f'https://www.youtube.com/watch?v={video_id}'])
 
-        with YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(f'https://www.youtube.com/watch?v={video_id}', download=True)
-            filename = ydl.prepare_filename(info)
-            mp3_filename = filename.rsplit('.', 1)[0] + '.mp3'
-
-            if os.path.exists(mp3_filename):
-                return jsonify({"message": "Descarga completada", "file": mp3_filename})
-
-            return jsonify({"error": "No se pudo descargar el archivo"}), 500
+        file_path = f'/app/{video_id}.mp3'
+        if os.path.exists(file_path):
+            return jsonify({"status": "success", "url": f"/stream/{video_id}"}), 200
+        else:
+            return jsonify({"error": "File not found after download"}), 500
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/stream/<video_id>', methods=['GET'])
+def stream_audio(video_id):
+    file_path = f'/app/{video_id}.mp3'
+    if os.path.exists(file_path):
+        return app.send_static_file(f'{video_id}.mp3')
+    else:
+        return jsonify({"error": "File not found"}), 404
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

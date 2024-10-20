@@ -1,5 +1,5 @@
-Flask==2.0.3
-flask
+flask==2.0.3  # Usa una versión que sea compatible con werkzeug 2.x
+werkzeug==2.0.3
 yt-dlp
 ytmusicapi  # Agrega aquí cualquier otra librería de Python que estés utilizando
 sphinx<7

@@ -1,21 +1,34 @@
 const express = require('express');
 const cors = require('cors');
 const { exec } = require('child_process');
+const fs = require('fs');
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Función genérica para ejecutar comandos de Python
 const runPythonScript = (command, query, res, extraArg = "") => {
-    exec(`python3 ./ytmusicapi/parsers/index.py "${command}" "${query}" ${extraArg}`, (error, stdout, stderr) => {
+    exec(`python3 ./ytmusicapi/parsers/download_audio.py "${query}"`, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
             return res.status(500).json({ error: stderr });
         }
         try {
-            const results = JSON.parse(stdout);
-            res.json(results);
+            const results = JSON.parse(stdout); // Asegúrate de que la salida sea JSON válida
+            if (results.status === "success") {
+                const filePath = `./${results.file}`;
+                res.download(filePath, (err) => {
+                    if (err) {
+                        console.error('Error al enviar el archivo:', err);
+                        res.status(500).json({ error: 'Error al enviar el archivo' });
+                    } else {
+                        // Elimina el archivo después de ser descargado
+                        fs.unlinkSync(filePath);
+                    }
+                });
+            } else {
+                res.status(500).json(results);
+            }
         } catch (parseError) {
             res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
         }
@@ -71,33 +84,9 @@ app.get('/download', (req, res) => {
     if (!youtubeId) {
         return res.status(400).json({ error: "YouTube ID is required" });
     }
-
-    exec(`python3 ./ytmusicapi/parsers/download_audio.py "${youtubeId}"`, (error, stdout, stderr) => {
-        if (error) {
-            console.error('Error ejecutando el script:', stderr);
-            return res.status(500).json({ error: stderr });
-        }
-        try {
-            const results = JSON.parse(stdout);
-            if (results.status === "success") {
-                const filePath = `./${results.file}`;
-                res.download(filePath, (err) => {
-                    if (err) {
-                        console.error('Error al enviar el archivo:', err);
-                        res.status(500).json({ error: 'Error al enviar el archivo' });
-                    } else {
-                        // Elimina el archivo después de ser descargado para ahorrar espacio
-                        fs.unlinkSync(filePath);
-                    }
-                });
-            } else {
-                res.status(500).json(results);
-            }
-        } catch (parseError) {
-            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
-        }
-    });
+    runPythonScript("download_audio", youtubeId, res);
 });
+
 
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;

@@ -1,7 +1,7 @@
 # Usar una imagen base que tenga Python y Node.js
 FROM python:3.9-slim
 
-# Instalar Node.js
+# Instalar Node.js y ffmpeg
 RUN apt-get update && \
     apt-get install -y curl ffmpeg && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
@@ -12,15 +12,17 @@ RUN apt-get update && \
 # Crear un directorio de la app
 WORKDIR /app
 
-# Copiar el archivo package.json y package-lock.json
+# Copiar package.json y package-lock.json
 COPY package*.json ./
+
+# Instalar las dependencias de Node.js
+RUN npm install --omit=dev
+
+# Instalar yt-dlp para descargar videos de YouTube
+RUN pip install yt-dlp
 
 # Copiar el resto del código de la aplicación
 COPY . .
-
-# Instalar las dependencias de Node.js y Python
-RUN npm install --omit=dev
-RUN pip install yt-dlp
 
 # Exponer el puerto
 EXPOSE 8080

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { exec } = require('child_process');
 const fs = require('fs');
+const path = require('path');
 const app = express();
 
 app.use(cors());
@@ -23,7 +24,8 @@ const runPythonScript = (command, query, res, extraArg = "") => {
     });
 };
 
-const runYoutubeScript = (query, res) => {
+// Función para ejecutar el script de Python
+const runYTscript = (query, res) => {
     exec(`python3 ./ytmusicapi/parsers/download_audio.py "${query}"`, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
@@ -32,16 +34,10 @@ const runYoutubeScript = (query, res) => {
         try {
             const results = JSON.parse(stdout);
             if (results.status === "success") {
-                const filePath = `./${results.file}`;
-                res.download(filePath, (err) => {
-                    if (err) {
-                        console.error('Error al enviar el archivo:', err);
-                        res.status(500).json({ error: 'Error al enviar el archivo' });
-                    } else {
-                        // Elimina el archivo después de ser descargado
-                        fs.unlinkSync(filePath);
-                    }
-                });
+                const filePath = path.resolve(__dirname, results.file);
+                // Devuelve el enlace de streaming
+                const fileUrl = `${req.protocol}://${req.get('host')}/stream/${results.file}`;
+                res.json({ status: "success", url: fileUrl });
             } else {
                 res.status(500).json(results);
             }
@@ -95,13 +91,30 @@ app.get('/lyrics', (req, res) => {
     runPythonScript("get_lyrics", songId, res);
 });
 
+// Endpoint para manejar la descarga y conversión
 app.get('/download', (req, res) => {
     const youtubeId = req.query.id;
     if (!youtubeId) {
         return res.status(400).json({ error: "YouTube ID is required" });
     }
-    runYoutubeScript("download_audio", youtubeId, res);
+    runYTscript(youtubeId, res);
 });
+
+// Endpoint para servir el archivo MP3 en streaming
+app.get('/stream/:filename', (req, res) => {
+    const fileName = req.params.filename;
+    const filePath = path.resolve(__dirname, fileName);
+
+    // Verificar si el archivo existe antes de servirlo
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'audio/mpeg');
+        const readStream = fs.createReadStream(filePath);
+        readStream.pipe(res);
+    } else {
+        res.status(404).json({ error: "File not found" });
+    }
+});
+
 
 
 // Configuración del puerto

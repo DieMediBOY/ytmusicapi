@@ -54,24 +54,11 @@ def get_song_related(song_id):
     return {"related_songs": related_songs}
 
 def get_lyrics(song_id):
-    # Realiza una búsqueda para obtener el browseId de la canción
-    search_results = yt.search(song_id)
-    if not search_results:
-        return {"error": "No search results found"}
-
-    # Busca el browseId que contiene las letras
-    browse_id = None
-    for result in search_results:
-        if result.get("resultType") == "song" and "lyrics" in result:
-            browse_id = result["lyrics"]["browseId"]
-            break
-
-    if not browse_id:
-        return {"error": "No lyrics found for the provided song"}
-
-    # Usa el browseId para obtener las letras
-    lyrics = yt.get_lyrics(browse_id)
-    return {"lyrics": lyrics}
+    try:
+        lyrics = yt.get_lyrics(song_id)
+        return {"lyrics": lyrics}
+    except Exception as e:
+        return {"error": str(e)}
 
 def get_tasteprofile():
     taste_profile = yt.get_tasteprofile()

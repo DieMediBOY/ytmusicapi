@@ -1,16 +1,13 @@
-# Usar una imagen base de Python para poder usar yt-dlp
+# Usar una imagen base que tenga Python 3.9
 FROM python:3.9-slim
 
-# Instalar ffmpeg y node
+# Instalar curl y ffmpeg, además de node y npm
 RUN apt-get update && \
     apt-get install -y curl ffmpeg && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Instalar yt-dlp para descargar videos de YouTube
-RUN pip install yt-dlp
 
 # Crear un directorio de la app
 WORKDIR /app
@@ -20,6 +17,9 @@ COPY package*.json ./
 
 # Instalar las dependencias de Node.js
 RUN npm install --omit=dev
+
+# Instalar ytmusicapi con pip
+RUN pip install ytmusicapi yt-dlp
 
 # Copiar el resto del código de la aplicación
 COPY . .

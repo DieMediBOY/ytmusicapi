@@ -13,6 +13,7 @@ COPY package*.json ./
 # Instalar las dependencias de Node.js
 RUN npm install --omit=dev && npm start
 RUN pip install yt-dlp
+RUN npm install fluent-ffmpeg
 
 # Copiar el resto del código de la aplicación
 COPY . .

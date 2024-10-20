@@ -1,7 +1,7 @@
-# Usar una imagen base que tenga Python 3.9
+# Usar una imagen base de Python 3.9 slim
 FROM python:3.9-slim
 
-# Instalar curl y ffmpeg, además de node y npm
+# Instalar dependencias de sistema
 RUN apt-get update && \
     apt-get install -y curl ffmpeg && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
@@ -9,23 +9,23 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Crear un directorio de la app
+# Crear un directorio para la app
 WORKDIR /app
 
-# Copiar el archivo package.json y package-lock.json
+# Copiar los archivos package.json y package-lock.json
 COPY package*.json ./
 
-# Instalar las dependencias de Node.js
+# Instalar dependencias de Node.js
 RUN npm install --omit=dev
 
-# Instalar ytmusicapi con pip
-RUN pip install ytmusicapi yt-dlp
+# Instalar yt-dlp
+RUN pip install yt-dlp
 
-# Copiar el resto del código de la aplicación
+# Copiar el resto del código
 COPY . .
 
 # Exponer el puerto
 EXPOSE 8080
 
-# Ejecutar la aplicación
+# Comando para ejecutar la aplicación
 CMD ["npm", "start"]

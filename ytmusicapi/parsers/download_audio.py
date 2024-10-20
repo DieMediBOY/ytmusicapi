@@ -21,7 +21,7 @@ def download_audio(youtube_id):
     }
 
     try:
-        # Descargar el audio con yt-dlp
+        # Descargar el audio con yt-dlp y redirigir la salida estándar
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
 
@@ -43,4 +43,5 @@ if __name__ == "__main__":
     else:
         youtube_id = sys.argv[1]
         result = download_audio(youtube_id)
+        # Asegurarse de que solo imprimimos JSON válido
         print(json.dumps(result))

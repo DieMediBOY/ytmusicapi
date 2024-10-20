@@ -6,58 +6,57 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Ruta para la raíz con un mensaje de bienvenida
-app.get('/', (req, res) => {
-    res.send('Bienvenido');
-});
-
-// Ruta para buscar canciones usando `ytmusicapi`
-app.get('/search', (req, res) => {
-    const query = req.query.query;
-
-    if (!query) {
-        return res.status(400).json({ error: "Query parameter is required" });
-    }
-
-    // Ejecuta el script de Python con el argumento de búsqueda
-    exec(`python3 ./ytmusicapi/parsers/index.py "${query}"`, (error, stdout, stderr) => {
+// Función genérica para ejecutar comandos de Python
+const runPythonScript = (command, query, res, extraArg = "") => {
+    exec(`python3 ./ytmusicapi/parsers/index.py "${command}" "${query}" ${extraArg}`, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
             return res.status(500).json({ error: stderr });
         }
         try {
-            // Intenta parsear la salida del script como JSON
             const results = JSON.parse(stdout);
             res.json(results);
         } catch (parseError) {
             res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
         }
     });
+};
+
+// Endpoint para cada función
+app.get('/search', (req, res) => {
+    const query = req.query.query;
+    if (!query) return res.status(400).json({ error: "Query parameter is required" });
+    runPythonScript("search", query, res);
 });
 
-// Ruta para obtener sugerencias de búsqueda
 app.get('/suggestions', (req, res) => {
     const query = req.query.query;
-
-    if (!query) {
-        return res.status(400).json({ error: "Query parameter is required" });
-    }
-
-    // Ejecuta el script de Python con el comando "suggestions"
-    exec(`python3 ./ytmusicapi/parsers/index.py "${query}" suggestions`, (error, stdout, stderr) => {
-        if (error) {
-            console.error('Error ejecutando el script:', stderr);
-            return res.status(500).json({ error: stderr });
-        }
-        try {
-            // Intenta parsear la salida del script como JSON
-            const suggestions = JSON.parse(stdout);
-            res.json(suggestions);
-        } catch (parseError) {
-            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
-        }
-    });
+    if (!query) return res.status(400).json({ error: "Query parameter is required" });
+    runPythonScript("suggestions", query, res);
 });
+
+// Más endpoints para cada función de YTMusic
+app.get('/home', (req, res) => runPythonScript("get_home", "", res));
+app.get('/artist', (req, res) => {
+    const artistId = req.query.artistId;
+    if (!artistId) return res.status(400).json({ error: "artistId is required" });
+    runPythonScript("get_artist", artistId, res);
+});
+
+app.get('/artist/albums', (req, res) => {
+    const artistId = req.query.artistId;
+    const albumType = req.query.albumType || "albums";
+    if (!artistId) return res.status(400).json({ error: "artistId is required" });
+    runPythonScript("get_artist_albums", artistId, res, albumType);
+});
+
+app.get('/album', (req, res) => {
+    const albumId = req.query.albumId;
+    if (!albumId) return res.status(400).json({ error: "albumId is required" });
+    runPythonScript("get_album", albumId, res);
+});
+
+// Añade más endpoints para las otras funciones siguiendo este patrón...
 
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;

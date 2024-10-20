@@ -26,17 +26,23 @@ const runPythonScript = (command, query, res, extraArg = "") => {
 
 // Función para ejecutar el script de Python
 const runYTscript = (youtubeId, res) => {
-     exec(`python3 ./ytmusicapi/parsers/download_audio.py "${youtubeId}"`, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+    exec(`python3 ./ytmusicapi/parsers/download_audio.py "${youtubeId}"`, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
-            return res.status(500).send('Error downloading audio');
+            return res.status(500).send('Error ejecutando el script');
         }
-        
-        const filePath = path.resolve(__dirname, stdout.trim());
-        
-        // Verificar si el archivo existe antes de enviarlo
+
+        // Verifica la salida para el nombre del archivo o un error
+        const output = stdout.trim();
+        if (output.startsWith("ERROR")) {
+            return res.status(500).send(output);
+        }
+
+        // Se espera que la salida sea el nombre del archivo MP3
+        const filePath = path.resolve(__dirname, output);
         if (fs.existsSync(filePath)) {
             res.setHeader('Content-Type', 'audio/mpeg');
+            res.setHeader('Content-Disposition', `inline; filename="${output}"`);
             const readStream = fs.createReadStream(filePath);
             readStream.pipe(res);
         } else {
@@ -89,7 +95,7 @@ app.get('/lyrics', (req, res) => {
     runPythonScript("get_lyrics", songId, res);
 });
 
-// Endpoint para manejar la descarga y devolver el MP3 directamente
+// Endpoint para manejar la descarga y reproducir el MP3 directamente
 app.get('/download', (req, res) => {
     const youtubeId = req.query.id;
     if (!youtubeId) {
@@ -97,7 +103,6 @@ app.get('/download', (req, res) => {
     }
     runYTscript(youtubeId, res);
 });
-
 
 
 // Configuración del puerto

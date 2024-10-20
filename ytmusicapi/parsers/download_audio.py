@@ -11,7 +11,7 @@ def download_audio(youtube_id):
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': f'{youtube_id}.%(ext)s',
-        'quiet': True,  # Evita que yt-dlp imprima mensajes innecesarios
+        'quiet': True,  # Suprime los mensajes de progreso
         'no_warnings': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -34,6 +34,7 @@ def download_audio(youtube_id):
             return {"status": "error", "message": "File not found after download."}
 
     except Exception as e:
+        # Devuelve un JSON con el error
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":

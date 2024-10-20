@@ -6,23 +6,27 @@ import sys
 import json
 
 def search(query):
-    # Inicializar YTMusic (puede que necesites un archivo de autenticación 'oauth.json' si lo requieres)
+    # Inicializar YTMusic
     yt = YTMusic()  # Si necesitas autenticación, pasa la ruta de tu archivo: YTMusic('oauth.json')
     search_results = yt.search(query)
     return {"results": search_results}
 
-def search_suggestions(query)
-    # Inicializar YTMusic (puede que necesites un archivo de autenticación 'oauth.json' si lo requieres)
-    yt = YTMusic()  # Si necesitas autenticación, pasa la ruta de tu archivo: YTMusic('oauth.json')
-    suggestions_results = yt.get_search_suggestions(query)
-    return {"suggestions:": suggestions_results}
+def get_search_suggestions(query):
+    # Inicializar YTMusic
+    yt = YTMusic()
+    suggestions = yt.get_search_suggestions(query)
+    return {"suggestions": suggestions}
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(json.dumps({"error": "No search query provided"}))
+        print(json.dumps({"error": "No query provided"}))
     else:
         query = sys.argv[1]
-        results = search(query)
+        command = sys.argv[2] if len(sys.argv) > 2 else "search"
+        if command == "suggestions":
+            results = get_search_suggestions(query)
+        else:
+            results = search(query)
         print(json.dumps(results))
 
 UNIQUE_RESULT_TYPES = ["artist", "playlist", "song", "video", "station", "profile", "podcast", "episode"]

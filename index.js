@@ -26,13 +26,13 @@ const runPythonScript = (command, query, res, extraArg = "") => {
 
 // Función para ejecutar el script de Python
 const runYTscript = (query, res) => {
-    exec(`python3 ./ytmusicapi/parsers/download_audio.py "${query}"`, (error, stdout, stderr) => {
+     exec(`python3 ./ytmusicapi/parsers/download_audio.py "${query}"`, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
             return res.status(500).json({ error: stderr });
         }
         try {
-            const results = JSON.parse(stdout);
+            const results = JSON.parse(stdout.trim());
             if (results.status === "success") {
                 const filePath = path.resolve(__dirname, results.file);
                 // Devuelve el enlace de streaming

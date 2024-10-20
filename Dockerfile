@@ -11,8 +11,12 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar las dependencias de Node.js
-RUN npm install --omit=dev && npm start
+RUN npm install --omit=dev
+
+# Instalar yt-dlp para descargar los videos de YouTube
 RUN pip install yt-dlp
+
+# Instalar ffmpeg en Node.js para manipulación de audio
 RUN npm install fluent-ffmpeg
 
 # Copiar el resto del código de la aplicación

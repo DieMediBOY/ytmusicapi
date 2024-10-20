@@ -25,31 +25,22 @@ const runPythonScript = (command, query, res, extraArg = "") => {
 };
 
 // Función para ejecutar el script de Python
-const runYTscript = (query, res) => {
-     exec(`python3 ./ytmusicapi/parsers/download_audio.py "${query}"`, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+const runYTscript = (youtubeId, res) => {
+     exec(`python3 ./ytmusicapi/parsers/download_audio.py "${youtubeId}"`, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
-            return res.status(500).json({ error: stderr });
+            return res.status(500).send('Error downloading audio');
         }
-        try {
-            const results = JSON.parse(stdout.trim());
-            if (results.status === "success") {
-                const filePath = path.resolve(__dirname, results.file);
-                
-                // Verificar si el archivo existe antes de enviarlo
-                if (fs.existsSync(filePath)) {
-                    res.setHeader('Content-Type', 'audio/mpeg');
-                    res.setHeader('Content-Disposition', `attachment; filename="${results.file}"`);
-                    const readStream = fs.createReadStream(filePath);
-                    readStream.pipe(res);
-                } else {
-                    res.status(404).json({ error: "File not found" });
-                }
-            } else {
-                res.status(500).json(results);
-            }
-        } catch (parseError) {
-            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
+        
+        const filePath = path.resolve(__dirname, stdout.trim());
+        
+        // Verificar si el archivo existe antes de enviarlo
+        if (fs.existsSync(filePath)) {
+            res.setHeader('Content-Type', 'audio/mpeg');
+            const readStream = fs.createReadStream(filePath);
+            readStream.pipe(res);
+        } else {
+            res.status(404).send('File not found');
         }
     });
 };
@@ -98,11 +89,11 @@ app.get('/lyrics', (req, res) => {
     runPythonScript("get_lyrics", songId, res);
 });
 
-// Endpoint para manejar la descarga y conversión, devolviendo directamente el MP3
+// Endpoint para manejar la descarga y devolver el MP3 directamente
 app.get('/download', (req, res) => {
     const youtubeId = req.query.id;
     if (!youtubeId) {
-        return res.status(400).json({ error: "YouTube ID is required" });
+        return res.status(400).send('YouTube ID is required');
     }
     runYTscript(youtubeId, res);
 });

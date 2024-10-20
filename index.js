@@ -66,6 +66,39 @@ app.get('/lyrics', (req, res) => {
     runPythonScript("get_lyrics", songId, res);
 });
 
+app.get('/download', (req, res) => {
+    const youtubeId = req.query.id;
+    if (!youtubeId) {
+        return res.status(400).json({ error: "YouTube ID is required" });
+    }
+
+    exec(`python3 ./ytmusicapi/parsers/download_audio.py "${youtubeId}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error('Error ejecutando el script:', stderr);
+            return res.status(500).json({ error: stderr });
+        }
+        try {
+            const results = JSON.parse(stdout);
+            if (results.status === "success") {
+                const filePath = `./${results.file}`;
+                res.download(filePath, (err) => {
+                    if (err) {
+                        console.error('Error al enviar el archivo:', err);
+                        res.status(500).json({ error: 'Error al enviar el archivo' });
+                    } else {
+                        // Elimina el archivo después de ser descargado para ahorrar espacio
+                        fs.unlinkSync(filePath);
+                    }
+                });
+            } else {
+                res.status(500).json(results);
+            }
+        } catch (parseError) {
+            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
+        }
+    });
+});
+
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

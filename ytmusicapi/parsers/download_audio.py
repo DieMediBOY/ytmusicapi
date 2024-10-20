@@ -4,10 +4,6 @@ import os
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return "Bienvenido a la API de YouTube Music"
-
 @app.route('/download', methods=['GET'])
 def download_audio():
     video_id = request.args.get('id')

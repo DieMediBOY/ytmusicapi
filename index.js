@@ -20,7 +20,7 @@ app.get('/search', (req, res) => {
     }
 
     // Ejecuta el script de Python con el argumento de búsqueda
-    exec(`python3 ./ytmusicapi/parsers/search.py "${query}"`, (error, stdout, stderr) => {
+    exec(`python3 ./ytmusicapi/parsers/index.py "${query}"`, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
             return res.status(500).json({ error: stderr });
@@ -44,7 +44,7 @@ app.get('/suggestions', (req, res) => {
     }
 
     // Ejecuta el script de Python con el comando "suggestions"
-    exec(`python3 ./ytmusicapi/parsers/search.py "${query}" suggestions`, (error, stdout, stderr) => {
+    exec(`python3 ./ytmusicapi/parsers/index.py "${query}" suggestions`, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
             return res.status(500).json({ error: stderr });

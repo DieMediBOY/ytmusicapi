@@ -1,43 +1,45 @@
-import yt_dlp
-import sys
+from flask import Flask, request, jsonify
+from yt_dlp import YoutubeDL
 import os
 
-def download_audio(youtube_id):
-    youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
-    output_filename = f"{youtube_id}.mp3"
-    output_path = os.path.join(os.getcwd(), output_filename)
-    
-    ydl_opts = {
-    'format': 'bestaudio/best',
-    'outtmpl': f'{youtube_id}.%(ext)s',
-    'quiet': True,
-    'no_warnings': True,
-    'postprocessors': [{
-        'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'mp3',
-        'preferredquality': '192',
-        'ffmpeg_location': '/usr/bin/ffmpeg'  # Ajusta la ruta de ffmpeg si es necesario
-    }],
-}
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bienvenido a la API de YouTube Music"
+
+@app.route('/download', methods=['GET'])
+def download_audio():
+    video_id = request.args.get('id')
+
+    if not video_id:
+        return jsonify({"error": "No se proporcionó ningún ID de video"}), 400
 
     try:
-        print(f"Current working directory: {os.getcwd()}")
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([youtube_url])
+        # Configuración para descargar solo el audio en formato mp3
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+            'outtmpl': '/app/%(title)s.%(ext)s',  # Guardar archivo en el directorio de la app
+        }
 
-        if os.path.exists(output_path):
-            print(f"File generated: {output_filename}")
-            print(f"Available files: {os.listdir(os.getcwd())}")
-            print(output_filename)  # Imprimir solo el nombre del archivo
-        else:
-            print(f"ERROR: File not found at {output_path}")
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(f'https://www.youtube.com/watch?v={video_id}', download=True)
+            filename = ydl.prepare_filename(info)
+            mp3_filename = filename.rsplit('.', 1)[0] + '.mp3'
+
+            if os.path.exists(mp3_filename):
+                return jsonify({"message": "Descarga completada", "file": mp3_filename})
+
+            return jsonify({"error": "No se pudo descargar el archivo"}), 500
 
     except Exception as e:
-        print(f"ERROR: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("ERROR: No YouTube ID provided")
-    else:
-        youtube_id = sys.argv[1]
-        download_audio(youtube_id)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)

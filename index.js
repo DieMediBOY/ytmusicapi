@@ -122,31 +122,23 @@ app.get('/', (req, res) => {
 
 app.get('/download', (req, res) => {
     const videoId = req.query.id;
+
     if (!videoId) {
-        return res.status(400).json({ error: 'No se proporcionó ningún ID de video' });
+        return res.status(400).json({ error: 'No video ID provided' });
     }
 
     exec(`python3 ./ytmusicapi/parsers/download_audio.py --id=${videoId}`, (error, stdout, stderr) => {
         if (error) {
-            console.error(`Error ejecutando el script: ${error.message}`);
+            console.error(`Error ejecutando el script: ${error}`);
             return res.status(500).json({ error: 'Error ejecutando el script', details: error.message });
         }
-        if (stderr) {
-            console.error(`Script output: ${stderr}`);
-        }
 
-        try {
-            const result = JSON.parse(stdout);
-            res.json(result);
-        } catch (parseError) {
-            console.error('Error parsing Python output:', parseError);
-            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
-        }
+        res.json({ message: 'Download initiated', details: stdout || stderr });
     });
 });
 
 // Configuración del puerto
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 });

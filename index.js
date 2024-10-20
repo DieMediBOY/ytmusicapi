@@ -116,15 +116,34 @@ app.get('/lyrics', (req, res) => {
     runPythonScript("get_lyrics", songId, res);
 });
 
-// Endpoint para manejar la descarga y reproducir el MP3 directamente
-app.get('/download', (req, res) => {
-    const youtubeId = req.query.id;
-    if (!youtubeId) {
-        return res.status(400).send('YouTube ID is required');
-    }
-    runYTscript(youtubeId, res);
+app.get('/', (req, res) => {
+    res.send('Bienvenido a la API de YouTube Music');
 });
 
+app.get('/download', (req, res) => {
+    const videoId = req.query.id;
+    if (!videoId) {
+        return res.status(400).json({ error: 'No se proporcionó ningún ID de video' });
+    }
+
+    exec(`python3 ./ytmusicapi/parsers/download_audio.py --id=${videoId}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error ejecutando el script: ${error.message}`);
+            return res.status(500).json({ error: 'Error ejecutando el script', details: error.message });
+        }
+        if (stderr) {
+            console.error(`Script output: ${stderr}`);
+        }
+
+        try {
+            const result = JSON.parse(stdout);
+            res.json(result);
+        } catch (parseError) {
+            console.error('Error parsing Python output:', parseError);
+            res.status(500).json({ error: 'Error parsing Python output', details: parseError.message });
+        }
+    });
+});
 
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;

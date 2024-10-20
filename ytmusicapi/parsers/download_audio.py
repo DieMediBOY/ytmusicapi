@@ -21,7 +21,7 @@ def download_audio(youtube_id):
     }
 
     try:
-        # Descargar el audio con yt-dlp y redirigir la salida estándar
+        # Descargar el audio con yt-dlp
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
 

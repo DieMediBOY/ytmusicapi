@@ -35,9 +35,16 @@ const runYTscript = (query, res) => {
             const results = JSON.parse(stdout.trim());
             if (results.status === "success") {
                 const filePath = path.resolve(__dirname, results.file);
-                // Devuelve el enlace de streaming
-                const fileUrl = `${req.protocol}://${req.get('host')}/stream/${results.file}`;
-                res.json({ status: "success", url: fileUrl });
+                
+                // Verificar si el archivo existe antes de enviarlo
+                if (fs.existsSync(filePath)) {
+                    res.setHeader('Content-Type', 'audio/mpeg');
+                    res.setHeader('Content-Disposition', `attachment; filename="${results.file}"`);
+                    const readStream = fs.createReadStream(filePath);
+                    readStream.pipe(res);
+                } else {
+                    res.status(404).json({ error: "File not found" });
+                }
             } else {
                 res.status(500).json(results);
             }
@@ -91,28 +98,13 @@ app.get('/lyrics', (req, res) => {
     runPythonScript("get_lyrics", songId, res);
 });
 
-// Endpoint para manejar la descarga y conversión
+// Endpoint para manejar la descarga y conversión, devolviendo directamente el MP3
 app.get('/download', (req, res) => {
     const youtubeId = req.query.id;
     if (!youtubeId) {
         return res.status(400).json({ error: "YouTube ID is required" });
     }
     runYTscript(youtubeId, res);
-});
-
-// Endpoint para servir el archivo MP3 en streaming
-app.get('/stream/:filename', (req, res) => {
-    const fileName = req.params.filename;
-    const filePath = path.resolve(__dirname, fileName);
-
-    // Verificar si el archivo existe antes de servirlo
-    if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Type', 'audio/mpeg');
-        const readStream = fs.createReadStream(filePath);
-        readStream.pipe(res);
-    } else {
-        res.status(404).json({ error: "File not found" });
-    }
 });
 
 

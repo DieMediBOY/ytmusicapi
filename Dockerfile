@@ -12,14 +12,13 @@ RUN apt-get update && \
 # Crear un directorio para la app
 WORKDIR /app
 
-# Copiar los archivos package.json y package-lock.json
+# Copiar archivos de dependencias
+COPY requirements.txt .
 COPY package*.json ./
 
-# Instalar dependencias de Node.js
+# Instalar dependencias de Python y Node.js
+RUN pip install -r requirements.txt
 RUN npm install --omit=dev
-
-# Instalar yt-dlp
-RUN pip install yt-dlp
 
 # Copiar el resto del código
 COPY . .

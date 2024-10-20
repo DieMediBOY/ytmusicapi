@@ -11,7 +11,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar las dependencias de Node.js
-RUN npm install
+RUN npm install --omit=dev && npm start
+RUN pip install yt-dlp
 
 # Copiar el resto del código de la aplicación
 COPY . .

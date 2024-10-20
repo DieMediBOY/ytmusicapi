@@ -26,11 +26,14 @@ const runPythonScript = (command, query, res, extraArg = "") => {
 
 // Función para ejecutar el script de Python
 const runYTscript = (youtubeId, res) => {
-    exec(`python3 ./ytmusicapi/parsers/download_audio.py "${youtubeId}"`, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+   exec(`python3 ./ytmusicapi/parsers/download_audio.py "${youtubeId}"`, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
         if (error) {
             console.error('Error ejecutando el script:', stderr);
             return res.status(500).send('Error ejecutando el script');
         }
+
+        // Imprimir la salida para debug
+        console.log('Script output:', stdout);
 
         // Verifica la salida para el nombre del archivo o un error
         const output = stdout.trim();
@@ -40,6 +43,7 @@ const runYTscript = (youtubeId, res) => {
 
         // Se espera que la salida sea el nombre del archivo MP3
         const filePath = path.resolve(__dirname, output);
+        console.log('Buscando archivo en:', filePath);
         if (fs.existsSync(filePath)) {
             res.setHeader('Content-Type', 'audio/mpeg');
             res.setHeader('Content-Disposition', `inline; filename="${output}"`);

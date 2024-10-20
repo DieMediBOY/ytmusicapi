@@ -1,7 +1,6 @@
 import yt_dlp
-import subprocess
+import json
 import sys
-import os
 
 def download_audio(youtube_id):
     # Construir la URL de YouTube a partir del ID
@@ -16,6 +15,8 @@ def download_audio(youtube_id):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'quiet': True,  # Suprimir mensajes de descarga
+        'no_warnings': True  # Suprimir advertencias
     }
 
     try:
@@ -30,8 +31,9 @@ def download_audio(youtube_id):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print({"error": "No YouTube ID provided"})
+        print(json.dumps({"error": "No YouTube ID provided"}))
     else:
         youtube_id = sys.argv[1]
         result = download_audio(youtube_id)
-        print(result)
+        # Imprimir la salida como JSON
+        print(json.dumps(result))

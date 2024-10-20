@@ -57,6 +57,14 @@ app.get('/album', (req, res) => {
 });
 
 // Añade más endpoints para las otras funciones siguiendo este patrón...
+// Endpoint para obtener letras de una canción
+app.get('/lyrics', (req, res) => {
+    const songId = req.query.songId;
+    if (!songId) {
+        return res.status(400).json({ error: "songId parameter is required" });
+    }
+    runPythonScript("get_lyrics", songId, res);
+});
 
 // Configuración del puerto
 const PORT = process.env.PORT || 3000;

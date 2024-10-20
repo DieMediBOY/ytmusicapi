@@ -1,6 +1,7 @@
 import yt_dlp
 import json
 import sys
+import os
 
 def download_audio(youtube_id):
     # Construir la URL de YouTube a partir del ID
@@ -10,13 +11,13 @@ def download_audio(youtube_id):
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': f'{youtube_id}.%(ext)s',
+        'quiet': True,  # Evita que yt-dlp imprima mensajes innecesarios
+        'no_warnings': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'quiet': True,  # Suprimir mensajes de descarga
-        'no_warnings': True  # Suprimir advertencias
     }
 
     try:
@@ -25,7 +26,13 @@ def download_audio(youtube_id):
             ydl.download([youtube_url])
 
         mp3_filename = f"{youtube_id}.mp3"
-        return {"status": "success", "file": mp3_filename}
+        
+        # Verificar que el archivo MP3 existe
+        if os.path.exists(mp3_filename):
+            return {"status": "success", "file": mp3_filename}
+        else:
+            return {"status": "error", "message": "File not found after download."}
+
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -35,5 +42,4 @@ if __name__ == "__main__":
     else:
         youtube_id = sys.argv[1]
         result = download_audio(youtube_id)
-        # Imprimir la salida como JSON
         print(json.dumps(result))

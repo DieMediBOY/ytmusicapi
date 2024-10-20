@@ -55,6 +55,23 @@ const runYTscript = (youtubeId, res) => {
     });
 };
 
+const ffmpeg = require('fluent-ffmpeg');
+
+const convertToMp3 = (inputPath, outputPath, res) => {
+    ffmpeg(inputPath)
+        .toFormat('mp3')
+        .on('end', () => {
+            res.setHeader('Content-Type', 'audio/mpeg');
+            res.setHeader('Content-Disposition', `inline; filename="${path.basename(outputPath)}"`);
+            fs.createReadStream(outputPath).pipe(res);
+        })
+        .on('error', (err) => {
+            console.error('Error durante la conversión:', err);
+            res.status(500).send('Error during conversion');
+        })
+        .save(outputPath);
+};
+
 // Endpoint para cada función
 app.get('/search', (req, res) => {
     const query = req.query.query;

@@ -12,6 +12,10 @@
     "body-parser": "^1.19.0",
     "fluent-ffmpeg": "^2.1.2"
   },
+  "devDependencies": {
+    "@netlify/plugin-functions-install-node-modules": "^x.x.x",
+    "@netlify/plugin-local-install": "^x.x.x"
+  },
   "engines": {
     "node": ">=16.x"
   }

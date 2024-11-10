@@ -4,7 +4,7 @@
   "description": "API para YouTube Music utilizando ytmusicapi y Node.js",
   "main": "index.js",
   "scripts": {
-    "build": "node index.js",
+    "build": "echo 'Construcción completada'",
     "start": "node index.js"
   },
   "dependencies": {

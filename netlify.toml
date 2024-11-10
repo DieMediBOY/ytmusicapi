@@ -14,9 +14,6 @@
   directory = "functions"
 
 # Reemplazo de los pasos de instalación del Dockerfile
-[[plugins]]
-  package = "@netlify/plugin-functions-install-node-modules"
 
 [[plugins]]
-  package = "@netlify/plugin-local-install"
   inputs = { commands = ["apt-get update", "apt-get install -y ffmpeg"] }

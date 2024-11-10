@@ -1,10 +1,7 @@
 [build]
-  # Directorio donde se colocan los archivos de salida de la aplicación
   publish = "build"
-  # Comando que Netlify debe ejecutar para construir el sitio
   command = "npm run build"
 
-  # Configuración de variables de entorno para la construcción
   [build.environment]
     PYTHON_VERSION = "3.9"
     NODE_VERSION = "18"
@@ -12,8 +9,3 @@
 # Definición de funciones para un backend simple (si tienes algún archivo en la carpeta "functions")
 [functions]
   directory = "functions"
-
-# Reemplazo de los pasos de instalación del Dockerfile
-
-[[plugins]]
-  inputs = { commands = ["apt-get update", "apt-get install -y ffmpeg"] }

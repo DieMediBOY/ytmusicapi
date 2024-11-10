@@ -4,19 +4,10 @@
   # Comando que Netlify debe ejecutar para construir el sitio
   command = "npm run build"
 
-  # Configuración de variables de entorno para la construcción
+  # Configuración de variables de entorno
   [build.environment]
-    PYTHON_VERSION = "3.9"
     NODE_VERSION = "18"
 
-# Definición de funciones para un backend simple (si tienes algún archivo en la carpeta "functions")
+# Definición de funciones si estás usando funciones serverless (opcional)
 [functions]
   directory = "functions"
-
-# Reemplazo de los pasos de instalación del Dockerfile
-[[plugins]]
-  package = "@netlify/plugin-functions-install-node-modules"
-
-[[plugins]]
-  package = "@netlify/plugin-local-install"
-  inputs = { commands = ["apt-get update", "apt-get install -y ffmpeg"] }
